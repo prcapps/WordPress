@@ -273,7 +273,7 @@ class RE_Filter_Log {
 
 		$orderby = 'id';
 		$direction = 'DESC';
-		$limit = 20;
+		$limit = RED_DEFAULT_PER_PAGE;
 		$offset = 0;
 		$where = '';
 
@@ -296,7 +296,7 @@ class RE_Filter_Log {
 		if ( isset( $params['perPage'] ) ) {
 			$limit = intval( $params['perPage'], 10 );
 			$limit = min( 100, $limit );
-			$limit = max( 10, $limit );
+			$limit = max( 5, $limit );
 		}
 
 		if ( isset( $params['page'] ) ) {

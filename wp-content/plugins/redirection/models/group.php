@@ -40,6 +40,38 @@ class Red_Group {
 		return false;
 	}
 
+	static function get_all() {
+		global $wpdb;
+
+		$data = array();
+		$rows = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}redirection_groups" );
+
+		if ( $rows ) {
+			foreach ( $rows as $row ) {
+				$group = new Red_Group( $row );
+				$data[] = $group->to_json();
+			}
+		}
+
+		return $data;
+	}
+
+	static function get_all_for_module( $module_id ) {
+		global $wpdb;
+
+		$data = array();
+		$rows = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}redirection_groups WHERE module_id=%d", $module_id ) );
+
+		if ( $rows ) {
+			foreach ( $rows as $row ) {
+				$group = new Red_Group( $row );
+				$data[] = $group->to_json();
+			}
+		}
+
+		return $data;
+	}
+
 	static function get_for_select() {
 		global $wpdb;
 
@@ -50,7 +82,7 @@ class Red_Group {
 			foreach ( $rows as $row ) {
 				$module = Red_Module::get( $row->module_id );
 				if ( $module ) {
-					$data[ $module->get_name() ][ $row->id ] = $row->name;
+					$data[ $module->get_name() ][ intval( $row->id, 10 ) ] = $row->name;
 				}
 			}
 		}
@@ -97,6 +129,8 @@ class Red_Group {
 			Red_Module::flush_by_module( $old_id );
 			Red_Module::flush_by_module( $this->module_id );
 		}
+
+		return true;
 	}
 
 	public function delete() {
@@ -147,7 +181,7 @@ class Red_Group {
 
 		$orderby = 'id';
 		$direction = 'DESC';
-		$limit = 20;
+		$limit = RED_DEFAULT_PER_PAGE;
 		$offset = 0;
 		$where = '';
 
@@ -170,7 +204,7 @@ class Red_Group {
 		if ( isset( $params['perPage'] ) ) {
 			$limit = intval( $params['perPage'], 10 );
 			$limit = min( 100, $limit );
-			$limit = max( 10, $limit );
+			$limit = max( 5, $limit );
 		}
 
 		if ( isset( $params['page'] ) ) {
@@ -198,11 +232,14 @@ class Red_Group {
 	}
 
 	public function to_json() {
+		$module = Red_Module::get( $this->get_module_id() );
+
 		return array(
 			'id' => $this->get_id(),
 			'name' => $this->get_name(),
 			'redirects' => $this->get_total_redirects(),
 			'module_id' => $this->get_module_id(),
+			'moduleName' => $module ? $module->get_name() : '',
 			'enabled' => $this->is_enabled(),
 		);
 	}

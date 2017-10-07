@@ -39,14 +39,15 @@ class Apache_Module extends Red_Module {
 			return;
 		}
 
-		$items = Red_Item::get_by_module( $this->get_id() );
+		$items = Red_Item::get_all_for_module( $this->get_id() );
 
 		// Produce the .htaccess file
 		$htaccess = new Red_Htaccess();
 		if ( is_array( $items ) && count( $items ) > 0 ) {
 			foreach ( $items as $item ) {
-				if ( $item->is_enabled() )
+				if ( $item->is_enabled() ) {
 					$htaccess->add( $item );
+				}
 			}
 		}
 
@@ -57,8 +58,8 @@ class Apache_Module extends Red_Module {
 		include_once dirname( dirname( __FILE__ ) ).'/models/htaccess.php';
 
 		$save = array(
-			'location'  => isset( $data['moduleData_location'] ) ? trim( $data['moduleData_location'] ) : '',
-			'canonical' => isset( $data['moduleData_canonical'] ) ? trim( $data['moduleData_canonical'] ) : '',
+			'location'  => isset( $data['location'] ) ? trim( $data['location'] ) : '',
+			'canonical' => isset( $data['canonical'] ) ? trim( $data['canonical'] ) : '',
 		);
 
 		if ( ! in_array( $save['canonical'], array( 'www', 'nowww' ), true ) ) {
@@ -77,10 +78,6 @@ class Apache_Module extends Red_Module {
 			$save['location'] = '';
 		}
 
-		$options = red_get_options();
-		$options['modules'][ self::MODULE_ID ] = $save;
-
-		update_option( 'redirection_options', $options );
-		return true;
+		return $save;
 	}
 }
